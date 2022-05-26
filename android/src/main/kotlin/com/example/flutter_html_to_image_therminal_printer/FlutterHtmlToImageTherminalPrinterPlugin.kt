@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.os.Build
 import android.os.Handler
 import android.print.PrintAttributes
-import android.print.PdfPrinter
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -25,7 +24,7 @@ import java.io.FileOutputStream
 import kotlin.math.absoluteValue
 
 /** WebcontentConverterPlugin */
-class WebcontentConverterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class FlutterHtmlToImageTherminalPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -105,52 +104,7 @@ class WebcontentConverterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     }
                 }
             }
-            "contentToPDF" -> {
-                print("\n activity $activity")
-                webView = WebView(this.context)
-                val dwidth = this.activity.window.windowManager.defaultDisplay.width
-                val dheight = this.activity.window.windowManager.defaultDisplay.height
-                print("\ndwidth : $dwidth")
-                print("\ndheight : $dheight")
-                webView.layout(0, 0, dwidth, dheight)
-                webView.loadDataWithBaseURL(null, content, "text/HTML", "UTF-8", null)
-                webView.setInitialScale(1)
-                webView.settings.javaScriptEnabled = true
-                webView.settings.useWideViewPort = true
-                webView.settings.javaScriptCanOpenWindowsAutomatically = true
-                webView.settings.loadWithOverviewMode = true
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    print("\n=======> enabled scrolled <=========")
-                    WebView.enableSlowWholeDocumentDraw()
-                }
-
-                print("\n ///////////////// webview setted /////////////////")
-
-                webView.webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView, url: String) {
-                        super.onPageFinished(view, url)
-
-                        Handler().postDelayed({
-                            print("\nOS Version: ${android.os.Build.VERSION.SDK_INT}")
-                            print("\n ================ webview completed ==============")
-                            print("\n scroll delayed ${webView.scrollBarFadeDuration}")
-
-                            webView.exportAsPdfFromWebView(savedPath!!, format!!, margins!!, object : PdfPrinter.Callback {
-                                override fun onSuccess(filePath: String) {
-                                    result.success(filePath)
-                                }
-
-                                override fun onFailure() {
-                                    result.success(null)
-                                }
-                            })
-
-                        }, duration!!.toLong())
-
-                    }
-                }
-
-            }
+           
             else
             -> result.notImplemented()
         }
@@ -196,23 +150,7 @@ class WebcontentConverterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
 
 }
 
-fun WebView.exportAsPdfFromWebView(savedPath: String, format: Map<String, Double>, margins: Map<String, Double>, callback: PdfPrinter.Callback) {
-    print("\nsavedPath ${savedPath}")
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-        var attributes = PrintAttributes.Builder()
-                .setMediaSize(PrintAttributes.MediaSize("${format!!["width"]}-${format!!["height"]}", "android", format!!["width"]!!.convertFromInchesToInt(), format!!["height"]!!.convertFromInchesToInt()))
-                .setResolution(PrintAttributes.Resolution("pdf", "pdf", 600, 600))
-                .setMinMargins(PrintAttributes.Margins(margins!!["left"]!!.convertFromInchesToInt(), margins!!["top"]!!.convertFromInchesToInt(), margins!!["right"]!!.convertFromInchesToInt(), margins!!["bottom"]!!.convertFromInchesToInt()))
-                .build()
-        var file = File(savedPath)
-        val fileName = file.absoluteFile.name
-        var pdfPrinter = PdfPrinter(attributes)
-        val adapter = this.createPrintDocumentAdapter(fileName)
-        pdfPrinter.print(adapter, file, callback)
-    } else {
-        TODO("VERSION.SDK_INT < LOLLIPOP")
-    }
-}
+
 
 fun Double.convertFromInchesToInt(): Int {
     if (this > 0) {
