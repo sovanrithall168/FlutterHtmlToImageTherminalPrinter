@@ -37,7 +37,7 @@ class FlutterHtmlToImageTherminalPrinterPlugin : FlutterPlugin, MethodCallHandle
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         val viewID = "webview-view-type"
         flutterPluginBinding.platformViewRegistry.registerViewFactory(viewID, FLNativeViewFactory())
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "webcontent_converter")
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_html_to_image_therminal_printer")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
     }
